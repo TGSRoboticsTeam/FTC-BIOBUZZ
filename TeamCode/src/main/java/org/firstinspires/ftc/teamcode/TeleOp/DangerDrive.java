@@ -167,10 +167,10 @@ public class DangerDrive extends LinearOpMode {
             }
 
             // Apply swerve module outputs
-            runModule(frontLeftDrive, frontLeftSteer, frontLeftEncoder, FRONT_LEFT_OFFSET, -speedFrontLeft, targetAngleFL);
-            runModule(frontRightDrive, frontRightSteer, frontRightEncoder, FRONT_RIGHT_OFFSET, speedFrontRight, targetAngleFR);
-            runModule(backLeftDrive, backLeftSteer, backLeftEncoder, BACK_LEFT_OFFSET, -speedBackLeft, targetAngleBL);
-            runModule(backRightDrive, backRightSteer, backRightEncoder, BACK_RIGHT_OFFSET, speedBackRight, targetAngleBR);
+            runModule(frontLeftDrive, frontLeftSteer, frontLeftEncoder, FRONT_LEFT_OFFSET, speedFrontLeft, targetAngleFL);
+            runModule(frontRightDrive, frontRightSteer, frontRightEncoder, FRONT_RIGHT_OFFSET, -speedFrontRight, targetAngleFR);
+            runModule(backLeftDrive, backLeftSteer, backLeftEncoder, BACK_LEFT_OFFSET, speedBackLeft, targetAngleBL);
+            runModule(backRightDrive, backRightSteer, backRightEncoder, BACK_RIGHT_OFFSET, -speedBackRight, targetAngleBR);
 
         }
     }
