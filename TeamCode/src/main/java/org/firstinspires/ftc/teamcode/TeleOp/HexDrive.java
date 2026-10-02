@@ -120,10 +120,6 @@ public class HexDrive extends LinearOpMode {
 
             // Code for field centric
             double botHeading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
-            /* // !!!! TRY THIS OUT INSTEAD, NOT THIS, THE UNCOMMENTED STUFF BELOW IT !!!! //
-            double robotX = rawX * Math.cos(-botHeading) - rawY * Math.sin(-botHeading);
-            double robotY = rawX * Math.sin(-botHeading) + rawY * Math.cos(-botHeading);
-            //*/
             double robotX = rawX * Math.cos(botHeading) + rawY * Math.sin(botHeading);
             double robotY = -rawX * Math.sin(botHeading) + rawY * Math.cos(botHeading);
 
@@ -167,17 +163,17 @@ public class HexDrive extends LinearOpMode {
 
             // Apply swerve module outputs
             runModule(frontLeftDrive, frontLeftSteer, frontLeftEncoder, FRONT_LEFT_OFFSET, speedFrontLeft, targetAngleFL);
-            runModule(frontRightDrive, frontRightSteer, frontRightEncoder, FRONT_RIGHT_OFFSET, -speedFrontRight, targetAngleFR); // !!! POTENTIALLY CHANGE !!! //
+            runModule(frontRightDrive, frontRightSteer, frontRightEncoder, FRONT_RIGHT_OFFSET, speedFrontRight, targetAngleFR); // !!! POTENTIALLY CHANGE !!! //
             runModule(backLeftDrive, backLeftSteer, backLeftEncoder, BACK_LEFT_OFFSET, speedBackLeft, targetAngleBL);
-            runModule(backRightDrive, backRightSteer, backRightEncoder, BACK_RIGHT_OFFSET, -speedBackRight, targetAngleBR);
+            runModule(backRightDrive, backRightSteer, backRightEncoder, BACK_RIGHT_OFFSET, speedBackRight, targetAngleBR);
 
         }
     }
 
-    // --- HELPER METHODS ---
+    // --- HELPER METHODS --- //
 
     private void initializeHardware() {
-        // --- Swerve Drive Hardware ---
+        // --- Swerve Drive Hardware --- //
         frontLeftDrive  = hardwareMap.get(DcMotor.class, "frontLeftDrive"); // Motor Port 3
         frontRightDrive = hardwareMap.get(DcMotor.class, "frontRightDrive"); // Motor Port 2
         backLeftDrive   = hardwareMap.get(DcMotor.class, "backLeftDrive"); // Motor Port 1
@@ -206,16 +202,16 @@ public class HexDrive extends LinearOpMode {
         IMU.Parameters parameters = new IMU.Parameters(
                 new RevHubOrientationOnRobot(
                         RevHubOrientationOnRobot.LogoFacingDirection.UP,
-                        RevHubOrientationOnRobot.UsbFacingDirection.RIGHT // !!!! CHANGE TO .RIGHT, then if that doesn't work, change to .RIGHT !!!! //
+                        RevHubOrientationOnRobot.UsbFacingDirection.RIGHT
                 )
         );
         imu.initialize(parameters);
 
         // --- Swerve Drive Motor Direction Fix ---
-        frontLeftDrive.setDirection(DcMotor.Direction.REVERSE); // !!!! POTENTIALLY REMOVE THE SPEED INVERSIONS AND SET THE RIGHTS TO .FORWARD !!!! //
+        frontLeftDrive.setDirection(DcMotor.Direction.REVERSE);
         backLeftDrive.setDirection(DcMotor.Direction.REVERSE);
-        frontRightDrive.setDirection(DcMotor.Direction.REVERSE);
-        backRightDrive.setDirection(DcMotor.Direction.REVERSE);
+        frontRightDrive.setDirection(DcMotor.Direction.FORWARD);
+        backRightDrive.setDirection(DcMotor.Direction.FORWARD);
 
 
         // Set Zero Power Behavior
