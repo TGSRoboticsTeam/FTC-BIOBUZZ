@@ -15,14 +15,19 @@ import com.qualcomm.robotcore.hardware.VoltageSensor;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 //@Disabled
-@TeleOp(name = "DangerDrive", group = "Swerve")
+@TeleOp(name = "HexDrive", group = "Swerve")
 //@Disabled
-public class DangerDrive extends LinearOpMode {
+public class HexDrive extends LinearOpMode {
 
     // --- 1. HARDWARE DECLARATIONS ---
     private DcMotor frontLeftDrive, frontRightDrive, backLeftDrive, backRightDrive;
     private CRServo frontLeftSteer, frontRightSteer, backLeftSteer, backRightSteer;
     private AnalogInput frontLeftEncoder, frontRightEncoder, backLeftEncoder, backRightEncoder;
+
+    private DcMotor intake1, intake2;
+    private DcMotor launcher1, launcher2;
+    private Servo blocker;
+
     private IMU imu; // Kept IMU object, but drive logic ignores its data
     private VoltageSensor voltageSensor;
 
@@ -68,6 +73,8 @@ public class DangerDrive extends LinearOpMode {
 
         waitForStart();
 
+        imu.resetYaw();
+
         // No headingOffset is needed for Robot-Centric drive
         double targetAngleFL = 0, targetAngleFR = 0, targetAngleBL = 0, targetAngleBR = 0;
 
@@ -100,14 +107,25 @@ public class DangerDrive extends LinearOpMode {
             }
 
 
-            // ------ DRIVE INPUTS (ROBOT-CENTRIC) ------ //
+            // ------ IMU RESETTING ----- //
+            if (gamepad1.dpad_up) {
+                imu.resetYaw();
+            }
+
+            // ------ DRIVE INPUTS (FIELD-CENTRIC) ------ //
             // Joystick inputs are the final robot-centric inputs
-            double robotY = -gamepad1.left_stick_y * speedMultiplier; // Forward/Backward
-            double robotX = gamepad1.left_stick_x * speedMultiplier;  // Strafe Left/Right
+            double rawY = -gamepad1.left_stick_y * speedMultiplier; // Forward/Backward
+            double rawX = gamepad1.left_stick_x * speedMultiplier;  // Strafe Left/Right
             double rot = gamepad1.right_stick_x * speedMultiplier;     // Rotation
 
-            // The coordinate transformation (IMU math) is REMOVED
-
+            // Code for field centric
+            double botHeading = imu.getRobotYawPitchRollAngles().getYaw(AngleUnit.RADIANS);
+            /* // !!!! TRY THIS OUT INSTEAD, NOT THIS, THE UNCOMMENTED STUFF BELOW IT !!!! //
+            double robotX = rawX * Math.cos(-botHeading) - rawY * Math.sin(-botHeading);
+            double robotY = rawX * Math.sin(-botHeading) + rawY * Math.cos(-botHeading);
+            //*/
+            double robotX = rawX * Math.cos(botHeading) + rawY * Math.sin(botHeading);
+            double robotY = -rawX * Math.sin(botHeading) + rawY * Math.cos(botHeading);
 
             // Swerve Kinematics (Unchanged)
             double A = robotX - rot * (WHEELBASE / R);
@@ -149,7 +167,7 @@ public class DangerDrive extends LinearOpMode {
 
             // Apply swerve module outputs
             runModule(frontLeftDrive, frontLeftSteer, frontLeftEncoder, FRONT_LEFT_OFFSET, speedFrontLeft, targetAngleFL);
-            runModule(frontRightDrive, frontRightSteer, frontRightEncoder, FRONT_RIGHT_OFFSET, -speedFrontRight, targetAngleFR);
+            runModule(frontRightDrive, frontRightSteer, frontRightEncoder, FRONT_RIGHT_OFFSET, -speedFrontRight, targetAngleFR); // !!! POTENTIALLY CHANGE !!! //
             runModule(backLeftDrive, backLeftSteer, backLeftEncoder, BACK_LEFT_OFFSET, speedBackLeft, targetAngleBL);
             runModule(backRightDrive, backRightSteer, backRightEncoder, BACK_RIGHT_OFFSET, -speedBackRight, targetAngleBR);
 
@@ -172,6 +190,14 @@ public class DangerDrive extends LinearOpMode {
         frontRightEncoder = hardwareMap.get(AnalogInput.class, "frontRightEncoder"); // Analog Input Devices Port 1
         backLeftEncoder   = hardwareMap.get(AnalogInput.class, "backLeftEncoder"); // Analog Input Devices Port 3
         backRightEncoder  = hardwareMap.get(AnalogInput.class, "backRightEncoder"); // Analog Input Devices Port 2
+
+        intake1  = hardwareMap.get(DcMotor.class, "intake_1"); // Expansion Motor Port 0
+        intake2 = hardwareMap.get(DcMotor.class, "intake_2"); // Expansion Motor Port 1
+
+        launcher1   = hardwareMap.get(DcMotor.class, "launcher_1"); // Expansion Motor Port 2
+        launcher2  = hardwareMap.get(DcMotor.class, "launcher_2"); // Expansion Motor Port 3
+        blocker = hardwareMap.get(Servo.class, "blocker"); // Expansion Servo Port 0
+
         voltageSensor = hardwareMap.voltageSensor.iterator().next();
         imu = hardwareMap.get(IMU.class, "imu");
 
@@ -180,13 +206,13 @@ public class DangerDrive extends LinearOpMode {
         IMU.Parameters parameters = new IMU.Parameters(
                 new RevHubOrientationOnRobot(
                         RevHubOrientationOnRobot.LogoFacingDirection.UP,
-                        RevHubOrientationOnRobot.UsbFacingDirection.FORWARD
+                        RevHubOrientationOnRobot.UsbFacingDirection.RIGHT // !!!! CHANGE TO .RIGHT, then if that doesn't work, change to .RIGHT !!!! //
                 )
         );
         imu.initialize(parameters);
 
         // --- Swerve Drive Motor Direction Fix ---
-        frontLeftDrive.setDirection(DcMotor.Direction.REVERSE);
+        frontLeftDrive.setDirection(DcMotor.Direction.REVERSE); // !!!! POTENTIALLY REMOVE THE SPEED INVERSIONS AND SET THE RIGHTS TO .FORWARD !!!! //
         backLeftDrive.setDirection(DcMotor.Direction.REVERSE);
         frontRightDrive.setDirection(DcMotor.Direction.REVERSE);
         backRightDrive.setDirection(DcMotor.Direction.REVERSE);
