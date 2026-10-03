@@ -23,7 +23,6 @@ public class HexDrive extends LinearOpMode {
     private DcMotor frontLeftDrive, frontRightDrive, backLeftDrive, backRightDrive;
     private CRServo frontLeftSteer, frontRightSteer, backLeftSteer, backRightSteer;
     private AnalogInput frontLeftEncoder, frontRightEncoder, backLeftEncoder, backRightEncoder;
-
     private DcMotor intake1, intake2;
     private DcMotor launcher1, launcher2;
     private Servo blocker;
@@ -61,10 +60,14 @@ public class HexDrive extends LinearOpMode {
 
 
     // Wheel 'planting'
-    final int FRAMES_TO_PLANT_WHEELS = 5;
+    final int FRAMES_TO_PLANT_WHEELS = 10;//5;
     private int framesSinceLastMoved = 0;
 
+    private boolean intaking = false;
+    private boolean wasIntakeTriggerPressed = false;
 
+    private boolean launching = false;
+    private boolean wasLauncherTriggerPressed = false;
 
     @Override
     public void runOpMode() {
@@ -163,9 +166,52 @@ public class HexDrive extends LinearOpMode {
 
             // Apply swerve module outputs
             runModule(frontLeftDrive, frontLeftSteer, frontLeftEncoder, FRONT_LEFT_OFFSET, speedFrontLeft, targetAngleFL);
-            runModule(frontRightDrive, frontRightSteer, frontRightEncoder, FRONT_RIGHT_OFFSET, speedFrontRight, targetAngleFR); // !!! POTENTIALLY CHANGE !!! //
+            runModule(frontRightDrive, frontRightSteer, frontRightEncoder, FRONT_RIGHT_OFFSET, speedFrontRight, targetAngleFR);
             runModule(backLeftDrive, backLeftSteer, backLeftEncoder, BACK_LEFT_OFFSET, speedBackLeft, targetAngleBL);
             runModule(backRightDrive, backRightSteer, backRightEncoder, BACK_RIGHT_OFFSET, speedBackRight, targetAngleBR);
+
+            if (gamepad1.left_trigger > 0.5) {
+                blocker.setPosition(0.5);
+            } else {
+                blocker.setPosition(0.35);
+            }
+
+            boolean toggleIntake = gamepad1.right_trigger > 0.5;
+            if (toggleIntake && !wasIntakeTriggerPressed) {
+                intaking = !intaking;
+            }
+            if (intaking) {
+                intake1.setPower(1.0);
+                intake2.setPower(1.0);
+            } else {
+                intake1.setPower(0.0);
+                intake2.setPower(0.0);
+            }
+            wasIntakeTriggerPressed = toggleIntake;
+
+
+            boolean toggleLauncher = gamepad1.left_bumper;
+            if (toggleLauncher && !wasLauncherTriggerPressed) {
+                launching = !launching;
+            }
+            if (launching) {
+                launcher1.setPower(1.0);
+                launcher2.setPower(1.0);
+            } else {
+                launcher1.setPower(0.0);
+                launcher2.setPower(0.0);
+            }
+            wasLauncherTriggerPressed = toggleLauncher;
+
+            /*
+            if (gamepad1.left_bumper) {
+                launcher1.setPower(1.0);
+                launcher1.setPower(1.0);
+            } else {
+                launcher1.setPower(0.0);
+                launcher1.setPower(0.0);
+            }
+            //*/
 
         }
     }
